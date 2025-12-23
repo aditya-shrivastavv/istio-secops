@@ -1,0 +1,23 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: app02-vs
+  namespace: production
+spec:
+  hosts:
+    - app.easydevops.com
+  gateways:
+    - api
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: app02-svc
+        subset: v1
+      weight: 10
+    - destination:
+        host: app02-svc
+        subset: v2
+      weight: 90

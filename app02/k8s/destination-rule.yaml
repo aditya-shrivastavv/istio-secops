@@ -1,0 +1,16 @@
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: app02-dr
+  namespace: production
+spec:
+  host: app02-svc
+  subsets:
+  - name: v1
+    labels:
+      app: app02
+      version: v1
+  - name: v2
+    labels:
+      app: app02
+      version: v2
