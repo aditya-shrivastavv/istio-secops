@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: app01-dr
+  namespace: staging
+spec:
+  host: app01.staging.svc.cluster.local
+  # host: app01
+  # When short names are used (e.g. “reviews” instead of “reviews.default.svc.cluster.local”), Istio will interpret the short name based on the namespace of the rule, not the service.
+  subsets:
+  - name: v1
+    labels:
+      app: app01
+      version: v1
+  - name: v2
+    labels:
+      app: app01
+      version: v2
+    

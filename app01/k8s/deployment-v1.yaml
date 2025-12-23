@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app01-v1
+  namespace: staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app01
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: app01
+        version: v1
+        istio: monitor
+    spec:
+      containers:
+      - name: app01
+        image: adityadocs/istio-demo:latest
+        imagePullPolicy: Always
+        env:
+        - name: SERVICE
+          value: app01
+        - name: VERSION
+          value: v1
+        ports:
+        - name: http
+          containerPort: 8080
