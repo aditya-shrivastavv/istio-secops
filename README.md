@@ -17,7 +17,7 @@ Prequisites:
 - DestinationRule and VirtualService is used to send 100% of traffic to v2 version only.
 
 ```sh
-kubectl apply -f app01/k8s/
+kubectl apply -f app01/
 
 for i in {1..10}; do k exec -it -n client nginx -- curl app01.staging.svc/api/devices; echo; done
 ```
@@ -44,7 +44,7 @@ output:
 - Gateway is used to expose the application outside the cluster.
 
 ```sh
-kubectl apply -f app02/k8s/
+kubectl apply -f app02/
 
 for i in {1..10}; do k exec -it -n client nginx -- curl -H "Host: app.easydevops.com" http://192.168.49.2:30562/api/devices; echo; done
 ```
@@ -66,6 +66,8 @@ output:
 
 - The IP is the Minikube IP and the port is the NodePort of the Gateway Service.
   - `minikube ip`
+- Port is obtained from:
+  - `kubectl get svc -n istio-system istio-ingressgateway`
 - Making curl requests without IP and host address from the client pod will work but not as expected.
   - It would work like a simple kubernetes service without any traffic management. So traffic would be distributed between v1 and v2 versions.
   - This is because the Gateway is not being used in this case.
