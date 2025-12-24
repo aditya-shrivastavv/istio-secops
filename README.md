@@ -66,6 +66,10 @@ output:
 
 - The IP is the Minikube IP and the port is the NodePort of the Gateway Service.
   - `minikube ip`
+- Making curl requests without IP and host address from the client pod will work but not as expected.
+  - It would work like a simple kubernetes service without any traffic management. So traffic would be distributed between v1 and v2 versions.
+  - This is because the Gateway is not being used in this case.
+  - To make it work in this case, we need to add `mesh` gateway in the VirtualService. So that the requests from within the cluster also goes through the Gateway.
 
 ## `app03`: PeerAuthentication example
 
