@@ -14,10 +14,10 @@ spec:
         prefix: /
     route:
     - destination:
-        host: app02-svc
+        host: app02-svc.production.svc.cluster.local
         subset: v1
-      weight: 10
+      weight: 0
     - destination:
-        host: app02-svc
+        host: app02-svc.production.svc.cluster.local
         subset: v2
-      weight: 90
+      weight: 100
