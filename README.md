@@ -84,3 +84,5 @@ output:
 ## `app07`: CircuitBreaking example
 
 ## `app08`: RequestTimeout example
+
+## Ambient Mode
