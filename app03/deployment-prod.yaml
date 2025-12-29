@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app03
+  namespace: production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app03
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: app03
+        version: v1
+    spec:
+      containers:
+        - image: wizhubdocker8s/istio-demo:latest
+          imagePullPolicy: Always
+          name: app03
+          env:
+            - name: SERVICE
+              value: app03
+            - name: VERSION
+              value: v1
+          ports:
+            - name: http
+              containerPort: 8080

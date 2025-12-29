@@ -75,6 +75,42 @@ output:
 
 ## `app03`: PeerAuthentication example
 
+- 1 deployment of application in `production` namespace. Namespace is istio-injected.
+- 1 pod in `client` namespace to make requests to the application in `production` namespace. Namespace is istio-injected.
+- PeerAuthentication is used to enforce mTLS in `production` namespace. Policy requires mTLS traffic for all workloads under namespace `production`.
+
+```sh
+kubectl apply -f app03/
+kubectl apply -f client/k8s/
+
+kubectl exec -it -n client nginx -- curl app03-svc.production.svc/api/devices
+```
+
+output:
+
+```json
+{"version":"v1","devices":[{"id":1,"mac":"5F-33-CC-1F-43-82","firmware":"2.1.6"}]}
+```
+
+- Since mTLS is enforced in `production` namespace, the requests from `client` namespace to `production` namespace will be encrypted using mTLS.
+- If one of the namespaces is not istio-injected, the request will fail.
+
+```sh
+kubectl label ns client istio-injection-
+kubectl replace -f client/k8s/pod.yaml --force
+
+kubectl exec -it -n client nginx -- curl app03-svc.production.svc/api/devices
+```
+
+output:
+
+```sh
+curl: (56) Recv failure: Connection reset by peer
+command terminated with exit code 56
+```
+
+- The error indicates that the connection was reset because the request was not using mTLS, which is required by the PeerAuthentication policy in the `production` namespace.
+
 ## `app04`: AuthorizationPolicy example
 
 ## `app05`: FaultInjection example
