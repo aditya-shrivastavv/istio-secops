@@ -11,6 +11,20 @@ Prequisites:
   - `kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.28/samples/addons/prometheus.yaml`
   - `k port-forward -n istio-system svc/kiali 20001:20001`
 
+## Table of Contents
+
+- [Istio SecOps Practice](#istio-secops-practice)
+  - [Table of Contents](#table-of-contents)
+  - [`app01`: VirtualService and DestinationRule example](#app01-virtualservice-and-destinationrule-example)
+  - [`app02`: VirtualService and DestinationRule with Gateway example](#app02-virtualservice-and-destinationrule-with-gateway-example)
+  - [`app03`: PeerAuthentication example](#app03-peerauthentication-example)
+  - [`app04`: AuthorizationPolicy example](#app04-authorizationpolicy-example)
+  - [`app05`: FaultInjection example](#app05-faultinjection-example)
+  - [`app06`: Mirroring example](#app06-mirroring-example)
+  - [`app07`: CircuitBreaking example](#app07-circuitbreaking-example)
+  - [`app08`: RequestTimeout example](#app08-requesttimeout-example)
+  - [Ambient Mode](#ambient-mode)
+
 ## `app01`: VirtualService and DestinationRule example
 
 - 2 deployments of same application. 2 versions v1 and v2 differentiated by just a environment variable.
