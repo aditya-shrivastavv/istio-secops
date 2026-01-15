@@ -220,6 +220,128 @@ kubectl delete -f app04/
 
 ## `app05`: FaultInjection example
 
+- 1 deployment of application in `app05` namespace. Namespace is istio-injected.
+- VirtualService with fault injection rules to simulate network delays and service failures.
+- Demonstrates delay injection, abort injection, and combined fault scenarios for testing application resilience.
+
+**Setup:**
+
+```sh
+kubectl apply -f app05/namespace.yaml
+kubectl apply -f app05/deployment-v1.yaml
+kubectl apply -f app05/service.yaml
+kubectl apply -f app05/destination-rule.yaml
+kubectl apply -f client/k8s/
+```
+
+**Scenario 1: Normal behavior (no fault injection)**
+
+```sh
+kubectl apply -f app05/virtual-service-no-fault.yaml
+
+time kubectl exec -it -n client nginx -- curl app05-svc.app05.svc/api/devices
+```
+
+output:
+
+```json
+{"version":"v1","devices":[{"id":1,"mac":"5F-33-CC-1F-43-82","firmware":"2.1.6"}]}
+
+real    0m0.123s
+```
+
+- Without fault injection, requests complete quickly with normal response time.
+
+**Scenario 2: Delay injection (network latency simulation)**
+
+```sh
+kubectl apply -f app05/virtual-service-delay.yaml
+
+time kubectl exec -it -n client nginx -- curl app05-svc.app05.svc/api/devices
+```
+
+output:
+
+```json
+{"version":"v1","devices":[{"id":1,"mac":"5F-33-CC-1F-43-82","firmware":"2.1.6"}]}
+
+real    0m5.245s
+```
+
+- 100% of requests experience a 5-second delay before the response.
+- Useful for testing timeout handling and user experience under high latency.
+- The response is successful but delayed by exactly 5 seconds.
+
+**Scenario 3: Abort injection (service failure simulation)**
+
+```sh
+kubectl apply -f app05/virtual-service-abort.yaml
+
+kubectl exec -it -n client nginx -- curl -v app05-svc.app05.svc/api/devices
+```
+
+output:
+
+```sh
+< HTTP/1.1 503 Service Unavailable
+...
+fault filter abort
+```
+
+- 100% of requests return HTTP 503 (Service Unavailable) error.
+- The request never reaches the actual service; the fault is injected by the Envoy proxy.
+- Useful for testing error handling, circuit breakers, and retry logic.
+
+**Scenario 4: Combined fault injection (realistic chaos testing)**
+
+```sh
+kubectl apply -f app05/virtual-service-combined.yaml
+
+# Run multiple requests to see different behaviors
+for i in {1..10}; do 
+  echo "Request $i:"
+  time kubectl exec -it -n client nginx -- curl -s app05-svc.app05.svc/api/devices || echo "Failed"
+  echo "---"
+done
+```
+
+output:
+
+```sh
+Request 1:
+{"version":"v1","devices":[{"id":1,"mac":"5F-33-CC-1F-43-82","firmware":"2.1.6"}]}
+real    0m3.156s
+---
+Request 2:
+fault filter abort
+Failed
+real    0m0.089s
+---
+Request 3:
+{"version":"v1","devices":[{"id":1,"mac":"5F-33-CC-1F-43-82","firmware":"2.1.6"}]}
+real    0m0.098s
+---
+```
+
+- 50% of requests experience a 3-second delay.
+- 30% of requests fail with HTTP 500 (Internal Server Error).
+- Remaining 20% proceed normally.
+- This simulates realistic production issues for comprehensive resilience testing.
+- Use this to validate retry mechanisms, circuit breakers, and fallback strategies.
+
+**Key concepts:**
+
+- **Delay injection**: Tests application behavior under network latency without actual network issues.
+- **Abort injection**: Simulates service failures to validate error handling and recovery mechanisms.
+- **Percentage-based faults**: Allows gradual testing and realistic chaos engineering scenarios.
+- **Envoy proxy injection**: Faults are injected at the proxy level, not in application code.
+
+**Cleanup:**
+
+```sh
+kubectl delete -f app05/
+```
+
 ## `app06`: Mirroring example
 
 ## `app07`: CircuitBreaking example

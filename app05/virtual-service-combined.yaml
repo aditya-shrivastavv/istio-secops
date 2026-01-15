@@ -1,0 +1,23 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: app05-virtual-service
+  namespace: app05
+spec:
+  hosts:
+    - app05-svc
+  http:
+    - fault:
+        delay:
+          percentage:
+            value: 50.0
+          fixedDelay: 3s
+        abort:
+          percentage:
+            value: 30.0
+          httpStatus: 500
+      route:
+        - destination:
+            host: app05-svc
+            subset: v1
+          weight: 100
