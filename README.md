@@ -127,6 +127,97 @@ command terminated with exit code 56
 
 ## `app04`: AuthorizationPolicy example
 
+- 1 deployment of application in `app04` namespace. Namespace is istio-injected.
+- 1 pod in `client` namespace to make requests to the application in `app04` namespace. Both namespaces are istio-injected.
+- AuthorizationPolicy is used to control access to the application based on source namespace and operations.
+- Demo shows three scenarios: default allow, deny-all, and selective allow policies.
+
+**Scenario 1: Default behavior (no AuthorizationPolicy)**
+
+```sh
+kubectl apply -f app04/namespace.yaml
+kubectl apply -f app04/deployment-v1.yaml
+kubectl apply -f app04/service.yaml
+kubectl apply -f client/k8s/
+
+kubectl exec -it -n client nginx -- curl app04-svc.app04.svc
+```
+
+output:
+
+```json
+{"version":"v1","devices":[{"id":1,"mac":"5F-33-CC-1F-43-82","firmware":"2.1.6"}]}
+```
+
+- Without any AuthorizationPolicy, all traffic is allowed by default.
+
+**Scenario 2: Deny all traffic**
+
+```sh
+kubectl apply -f app04/authorization-policy-deny-all.yaml
+
+kubectl exec -it -n client nginx -- curl app04-svc.app04.svc
+```
+
+output:
+
+```sh
+RBAC: access denied
+```
+
+- The deny-all policy blocks all traffic to the app04 workloads.
+- This demonstrates the default-deny approach for zero-trust security.
+
+**Scenario 3: Allow traffic from specific namespace**
+
+```sh
+kubectl delete -f app04/authorization-policy-deny-all.yaml
+kubectl apply -f app04/authorization-policy-allow-client.yaml
+
+kubectl exec -it -n client nginx -- curl app04-svc.app04.svc
+```
+
+output:
+
+```json
+{"version":"v1","devices":[{"id":1,"mac":"5F-33-CC-1F-43-82","firmware":"2.1.6"}]}
+```
+
+- The allow policy explicitly permits traffic from the `client` namespace.
+- Traffic from other namespaces would be denied (default deny when ALLOW policies exist).
+
+**Scenario 4: Allow only GET methods**
+
+```sh
+kubectl delete -f app04/authorization-policy-allow-client.yaml
+kubectl apply -f app04/authorization-policy-allow-get-only.yaml
+
+# GET request (allowed)
+kubectl exec -it -n client nginx -- curl app04-svc.app04.svc
+
+# POST request (denied)
+kubectl exec -it -n client nginx -- curl -X POST app04-svc.app04.svc
+```
+
+output:
+
+```sh
+# GET succeeds
+{"version":"v1","devices":[{"id":1,"mac":"5F-33-CC-1F-43-82","firmware":"2.1.6"}]}
+
+# POST fails
+RBAC: access denied
+```
+
+- The policy allows only GET requests from the `client` namespace.
+- All other HTTP methods (POST, PUT, DELETE, etc.) are denied.
+
+**Cleanup:**
+
+```sh
+kubectl delete -f app04/
+```
+
 ## `app05`: FaultInjection example
 
 ## `app06`: Mirroring example

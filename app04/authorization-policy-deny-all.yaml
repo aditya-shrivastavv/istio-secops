@@ -1,0 +1,12 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-all
+  namespace: app04
+spec:
+  selector:
+    matchLabels:
+      app: app04
+  action: DENY
+  rules:
+    - {}

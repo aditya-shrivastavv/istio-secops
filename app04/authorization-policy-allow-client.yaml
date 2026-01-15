@@ -1,0 +1,14 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-client-namespace
+  namespace: app04
+spec:
+  selector:
+    matchLabels:
+      app: app04
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: ["client"]
